@@ -179,13 +179,12 @@ const calc = (
   const resDecay = 1 - debuffedElementRes.geo;
   const nonCrit = atk * attack.rate * dmgBuff * lvDecay * resDecay;
   const crit = nonCrit * (1 + reducedArtifact.critDmg + basicStat.critDmg);
-
   return {
     nonCrit,
     crit,
     expected:
       (reducedArtifact.critRate + basicStat.critRate) * crit +
-      (1 - reducedArtifact.critRate + basicStat.critRate) * nonCrit,
+      (1 - reducedArtifact.critRate - basicStat.critRate) * nonCrit,
   };
 };
 
