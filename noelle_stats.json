@@ -1,0 +1,22 @@
+{
+  "balance": {
+    "stat": {
+      "atk": 33,
+      "atk_percentage": 11.7,
+      "def": 63,
+      "def_percentage": 13.9,
+      "crit_rate": 29.2,
+      "crit_dmg": 94.8,
+      "dmg_all": 15,
+      "dmg_geo": 12
+    },
+    "enemy": {
+      "geo_debuf": -20
+    },
+    "weapon": {
+      "name": "★4 白影の剣",
+      "lv": 90,
+      "refine": "R5"
+    }
+  }
+}
