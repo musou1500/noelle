@@ -275,7 +275,7 @@ const character = {
     atk: [{ amount: reducedArtifact.atk }],
     atkPercentage: [
       // R5 whiteblind 4 stack
-      // { amount: 0.12 * 4 },
+      { amount: 0.12 * 4 },
       { amount: reducedArtifact.atkPercentage },
     ],
     def: [{ amount: reducedArtifact.def }],
@@ -287,7 +287,7 @@ const character = {
       { amount: 0.517 },
 
       // R5 whiteblind 4 stack
-      // { amount: 0.12 * 4 },
+      { amount: 0.12 * 4 },
       { amount: reducedArtifact.defPercentage },
     ],
     hp: [{ amount: reducedArtifact.hp }],
