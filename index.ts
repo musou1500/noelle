@@ -205,9 +205,7 @@ const calc = (
   const atk = noelleAtkBuff(
     character.baseStat.atk * atkPercentage + atkFixed,
     def,
-    // 実測するとなぜか防御力5.5%分くらい多めに伸びてる．．．．
-    // 天賦12時点で1.355456976866329
-    1.35
+    1.3
   );
 
   // ダメージバフ集計
@@ -277,7 +275,7 @@ const character = {
     atk: [{ amount: reducedArtifact.atk }],
     atkPercentage: [
       // R5 whiteblind 4 stack
-      { amount: 0.12 * 4 },
+      // { amount: 0.12 * 4 },
       { amount: reducedArtifact.atkPercentage },
     ],
     def: [{ amount: reducedArtifact.def }],
@@ -289,7 +287,7 @@ const character = {
       { amount: 0.517 },
 
       // R5 whiteblind 4 stack
-      { amount: 0.12 * 4 },
+      // { amount: 0.12 * 4 },
       { amount: reducedArtifact.defPercentage },
     ],
     hp: [{ amount: reducedArtifact.hp }],
