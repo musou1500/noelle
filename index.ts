@@ -34,13 +34,39 @@ interface Artifact {
   sub: ArtifactOpt[];
 }
 
-interface CharBasicStat {
+interface CharacterStat {
   atk: number;
   def: number;
   hp: number;
   lv: number;
   critRate: number;
   critDmg: number;
+}
+
+interface StatBuffItem {
+  amount: number;
+}
+
+interface DmgBuff {
+  tag: string;
+  amount: number;
+}
+
+interface StatBuff {
+  atk: StatBuffItem[];
+  atkPercentage: StatBuffItem[];
+  def: StatBuffItem[];
+  defPercentage: StatBuffItem[];
+  hp: StatBuffItem[];
+  hpPercentage: StatBuffItem[];
+  critRate: StatBuffItem[];
+  critDmg: StatBuffItem[];
+  dmgBuff: DmgBuff[];
+}
+
+interface Character {
+  baseStat: CharacterStat;
+  statBuff: StatBuff;
 }
 
 const artifacts: Artifact[] = [
@@ -119,6 +145,7 @@ const reduceArtifacts = (artifacts: Artifact[]): ReducedArtifact => {
 
 interface Attack {
   rate: number;
+  dmgBuffTags: Set<string>;
 }
 
 interface DmgBuffs {
@@ -144,84 +171,146 @@ const noelleAtkBuff = (atk: number, def: number, buffPercentage: number) =>
   atk + def * buffPercentage;
 
 const calc = (
-  basicStat: CharBasicStat,
+  character: Character,
   enemyStat: EnemyStat,
-  artifacts: Artifact[],
-  dmgBuffs: DmgBuffs,
   elementResDebuff: ElementRes,
   attack: Attack
 ) => {
-  const reducedArtifact = reduceArtifacts(artifacts);
+  // 防御力計算
+  const defPercentage =
+    1 +
+    character.statBuff.defPercentage.reduce(
+      (prev, cur) => prev + cur.amount,
+      0
+    );
+  const defFixed = character.statBuff.def.reduce(
+    (prev, cur) => prev + cur.amount,
+    0
+  );
+  const def = character.baseStat.def * defPercentage + defFixed;
 
-  // whiteblind
-  // atk,def: 12*4
-  // def: 51.7
-  const def =
-    basicStat.def * (1 + reducedArtifact.defPercentage + 0.48 + 0.517 + 0.3) +
-    reducedArtifact.def;
+  // 攻撃力計算
+
+  const atkPercentage =
+    1 +
+    character.statBuff.atkPercentage.reduce(
+      (prev, cur) => prev + cur.amount,
+      0
+    );
+  const atkFixed = character.statBuff.atk.reduce(
+    (prev, cur) => prev + cur.amount,
+    0
+  );
+
   const atk = noelleAtkBuff(
-    basicStat.atk * (1 + reducedArtifact.atkPercentage + 0.48) +
-      reducedArtifact.atk,
+    character.baseStat.atk * atkPercentage + atkFixed,
     def,
     // 実測するとなぜか防御力5.5%分くらい多めに伸びてる．．．．
     // 天賦12時点で1.355456976866329
     1.35
   );
 
-  const dmgBuff = 1 + reducedArtifact.geoDmgBuff + dmgBuffs.normalAtk;
+  // ダメージバフ集計
+  const dmgBuffPercentage =
+    1 +
+    character.statBuff.dmgBuff
+      .filter((dmgBuff) => attack.dmgBuffTags.has(dmgBuff.tag))
+      .reduce((prev, cur) => prev + cur.amount, 0);
+
   const lvDecay =
-    (basicStat.lv + 100) / (enemyStat.lv + 100 + (basicStat.lv + 100));
+    (character.baseStat.lv + 100) /
+    (enemyStat.lv + 100 + (character.baseStat.lv + 100));
+
   const debuffedElementRes = subElementRes(
     enemyStat.elementRes,
     elementResDebuff
   );
 
+  const critRate =
+    character.baseStat.critRate +
+    character.statBuff.critRate.reduce((prev, cur) => prev + cur.amount, 0);
+
+  const critDmg =
+    1 +
+    character.baseStat.critDmg +
+    character.statBuff.critDmg.reduce((prev, cur) => prev + cur.amount, 0);
+
+  // TODO: 元素耐性による減衰をなんとかする
   const resDecay = 1 - debuffedElementRes.geo;
-  const nonCrit = atk * attack.rate * dmgBuff * lvDecay * resDecay;
-  const crit = nonCrit * (1 + reducedArtifact.critDmg + basicStat.critDmg);
+  const nonCrit = atk * attack.rate * dmgBuffPercentage * lvDecay * resDecay;
+  const crit = nonCrit * critDmg;
+
   return {
     nonCrit,
     crit,
-    expected:
-      (reducedArtifact.critRate + basicStat.critRate) * crit +
-      (1 - reducedArtifact.critRate - basicStat.critRate) * nonCrit,
+    expected: critRate * crit + (1 - critRate) * nonCrit,
   };
 };
 
 const normalAttacks: Attack[] = [
-  { rate: 1.56 },
-  { rate: 1.45 },
-  { rate: 1.71 },
-  { rate: 2.24 },
+  { rate: 1.56, dmgBuffTags: new Set(["geo", "normalAtk"]) },
+  // { rate: 1.45, dmgBuffTags: new Set(["geo", "normalAtk"]) },
+  // { rate: 1.71, dmgBuffTags: new Set(["geo", "normalAtk"]) },
+  // { rate: 2.24, dmgBuffTags: new Set(["geo", "normalAtk"]) },
 ];
 
 console.log(`会心/非会心/期待値`);
 
-let sumExpected = 0;
-for (const attack of normalAttacks) {
-  const result = calc(
-    {
+// whiteblind
+// atk,def: 12*4
+// def: 51.7
+// noelle uniq(def percentage): +0.3
+
+const reducedArtifact = reduceArtifacts(artifacts);
+const result = calc(
+  {
+    baseStat: {
       lv: 90,
       def: 799,
       hp: 12071,
+      // white blind: 510
       atk: 191 + 510,
       critDmg: 0.5,
       critRate: 0.05,
     },
-    { lv: 90, elementRes: { geo: 0.1 } },
-    artifacts,
-    // 逆飛び + 元素共鳴 + 凝光バフ
-    { normalAtk: 0.4 + 0.15 + 0.12 },
-    { geo: 0.2 },
-    attack
-  );
+    statBuff: {
+      atk: [{ amount: reducedArtifact.atk }],
+      atkPercentage: [
+        // R5 whiteblind 4 stack
+        { amount: 0.12 * 4 },
+        { amount: reducedArtifact.atkPercentage },
+      ],
+      def: [{ amount: reducedArtifact.def }],
+      defPercentage: [
+        // noelle uniq stat
+        { amount: 0.3 },
 
-  sumExpected += result.expected;
-  console.log(
-    `${Math.floor(result.crit)}/${Math.floor(result.nonCrit)}/${Math.floor(
-      result.expected
-    )}`
-  );
-}
+        // R5 whiteblind
+        { amount: 0.517 },
 
-console.log(`期待値: ${sumExpected}`);
+        // R5 whiteblind 4 stack
+        { amount: 0.12 * 4 },
+        { amount: reducedArtifact.defPercentage },
+      ],
+      hp: [{ amount: reducedArtifact.hp }],
+      hpPercentage: [{ amount: reducedArtifact.hpPercentage }],
+      critRate: [{ amount: reducedArtifact.critRate }],
+      critDmg: [{ amount: reducedArtifact.critDmg }],
+      // 元素ダメージバフをどうにかする
+      dmgBuff: [
+        { amount: reducedArtifact.geoDmgBuff, tag: "geo" },
+        // 逆飛び
+        { tag: "normalAtk", amount: 0.4 },
+        // 元素共鳴
+        { tag: "normalAtk", amount: 0.15 },
+        // 凝光
+        { tag: "normalAtk", amount: 0.12 },
+      ],
+    },
+  },
+  { lv: 90, elementRes: { geo: 0.1 } },
+  { geo: 0.2 },
+  normalAttacks[0]
+);
+
+console.log(result);
