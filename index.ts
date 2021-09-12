@@ -249,9 +249,9 @@ const calc = (
 
 const normalAttacks: Attack[] = [
   { rate: 1.56, dmgBuffTags: new Set(["geo", "normalAtk"]) },
-  // { rate: 1.45, dmgBuffTags: new Set(["geo", "normalAtk"]) },
-  // { rate: 1.71, dmgBuffTags: new Set(["geo", "normalAtk"]) },
-  // { rate: 2.24, dmgBuffTags: new Set(["geo", "normalAtk"]) },
+  { rate: 1.45, dmgBuffTags: new Set(["geo", "normalAtk"]) },
+  { rate: 1.71, dmgBuffTags: new Set(["geo", "normalAtk"]) },
+  { rate: 2.24, dmgBuffTags: new Set(["geo", "normalAtk"]) },
 ];
 
 console.log(`会心/非会心/期待値`);
@@ -262,55 +262,62 @@ console.log(`会心/非会心/期待値`);
 // noelle uniq(def percentage): +0.3
 
 const reducedArtifact = reduceArtifacts(artifacts);
-const result = calc(
-  {
-    baseStat: {
-      lv: 90,
-      def: 799,
-      hp: 12071,
-      // white blind: 510
-      atk: 191 + 510,
-      critDmg: 0.5,
-      critRate: 0.05,
-    },
-    statBuff: {
-      atk: [{ amount: reducedArtifact.atk }],
-      atkPercentage: [
-        // R5 whiteblind 4 stack
-        { amount: 0.12 * 4 },
-        { amount: reducedArtifact.atkPercentage },
-      ],
-      def: [{ amount: reducedArtifact.def }],
-      defPercentage: [
-        // noelle uniq stat
-        { amount: 0.3 },
 
-        // R5 whiteblind
-        { amount: 0.517 },
-
-        // R5 whiteblind 4 stack
-        { amount: 0.12 * 4 },
-        { amount: reducedArtifact.defPercentage },
-      ],
-      hp: [{ amount: reducedArtifact.hp }],
-      hpPercentage: [{ amount: reducedArtifact.hpPercentage }],
-      critRate: [{ amount: reducedArtifact.critRate }],
-      critDmg: [{ amount: reducedArtifact.critDmg }],
-      // 元素ダメージバフをどうにかする
-      dmgBuff: [
-        { amount: reducedArtifact.geoDmgBuff, tag: "geo" },
-        // 逆飛び
-        { tag: "normalAtk", amount: 0.4 },
-        // 元素共鳴
-        { tag: "normalAtk", amount: 0.15 },
-        // 凝光
-        { tag: "normalAtk", amount: 0.12 },
-      ],
-    },
+const character = {
+  baseStat: {
+    lv: 90,
+    def: 799,
+    hp: 12071,
+    // white blind: 510
+    atk: 191 + 510,
+    critDmg: 0.5,
+    critRate: 0.05,
   },
-  { lv: 90, elementRes: { geo: 0.1 } },
-  { geo: 0.2 },
-  normalAttacks[0]
-);
+  statBuff: {
+    atk: [{ amount: reducedArtifact.atk }],
+    atkPercentage: [
+      // R5 whiteblind 4 stack
+      { amount: 0.12 * 4 },
+      { amount: reducedArtifact.atkPercentage },
+    ],
+    def: [{ amount: reducedArtifact.def }],
+    defPercentage: [
+      // noelle uniq stat
+      { amount: 0.3 },
 
-console.log(result);
+      // R5 whiteblind
+      { amount: 0.517 },
+
+      // R5 whiteblind 4 stack
+      { amount: 0.12 * 4 },
+      { amount: reducedArtifact.defPercentage },
+    ],
+    hp: [{ amount: reducedArtifact.hp }],
+    hpPercentage: [{ amount: reducedArtifact.hpPercentage }],
+    critRate: [{ amount: reducedArtifact.critRate }],
+    critDmg: [{ amount: reducedArtifact.critDmg }],
+    // 元素ダメージバフをどうにかする
+    dmgBuff: [
+      { amount: reducedArtifact.geoDmgBuff, tag: "geo" },
+      // 逆飛び
+      { tag: "normalAtk", amount: 0.4 },
+      // 元素共鳴
+      { tag: "normalAtk", amount: 0.15 },
+      // 凝光
+      { tag: "normalAtk", amount: 0.12 },
+    ],
+  },
+};
+
+const enemyStat = { lv: 90, elementRes: { geo: 0.1 } };
+const elementResDebuff = { geo: 0.2 };
+
+for (const atk of normalAttacks) {
+  const { crit, nonCrit, expected } = calc(
+    character,
+    enemyStat,
+    elementResDebuff,
+    atk
+  );
+  console.log(`${crit} / ${nonCrit} / ${expected}`);
+}
