@@ -10,16 +10,7 @@
 // 通常攻撃1段目(元素爆発中，沈淪4発動):7044
 // 敵: lv80ヒルチャール
 
-const lvDecayRate = (lv: number, enemyLv: number) =>
-  (lv + 100) / (enemyLv + 100 + (lv + 100));
-
-const resDecayRate = (elementRes: number, sub: number) => {
-  if (elementRes > sub) {
-    return 1 - (elementRes - sub);
-  } else {
-    return 1 - (elementRes - sub) / 2;
-  }
-};
+import { calcLvDecay, subElementRes } from "../dmg";
 
 export const calc = (ultEnabled = false) => {
   const ability = 1.094;
@@ -34,8 +25,8 @@ export const calc = (ultEnabled = false) => {
     baseDmg += hp * (0.077 + passiveUpRate);
   }
 
-  const lvDecay = lvDecayRate(80, 80);
-  const resDecay = resDecayRate(0.1, 0);
+  const lvDecay = calcLvDecay(80, 80);
+  const resDecay = subElementRes(0.1, 0);
   return [baseDmg * dmgBuff * lvDecay * resDecay];
 };
 

@@ -1,4 +1,5 @@
 import { Artifact, reduceArtifacts } from "./artifact";
+import { subElementRes } from "./dmg";
 
 const elementTypes = ["geo"] as const;
 type ElementType = typeof elementTypes[number];
@@ -104,18 +105,11 @@ interface DmgBuffs {
   normalAtk: number;
 }
 
-const subElementRes = (a: ElementRes, b: ElementRes) => {
+const subAllElementRes = (a: ElementRes, b: ElementRes) => {
   const result = { ...a };
   elementTypes.forEach((k) => {
-    const aAmount = a[k];
-    const bAmount = b[k];
-    if (aAmount < bAmount) {
-      result[k] = -(bAmount - aAmount) / 2;
-    } else {
-      result[k] = aAmount - bAmount;
-    }
+    result[k] = subElementRes(a[k], b[k]);
   });
-
   return result;
 };
 
@@ -171,7 +165,7 @@ const calc = (
     (character.baseStat.lv + 100) /
     (enemyStat.lv + 100 + (character.baseStat.lv + 100));
 
-  const debuffedElementRes = subElementRes(
+  const debuffedElementRes = subAllElementRes(
     enemyStat.elementRes,
     elementResDebuff
   );
