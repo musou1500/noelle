@@ -1,17 +1,5 @@
-const artifactOptTypes = [
-  "hp",
-  "hpPercentage",
-  "atk",
-  "atkPercentage",
-  "def",
-  "defPercentage",
-  "geoDmgBuff",
-  "critRate",
-  "critDmg",
-  "energyRecharge",
-] as const;
+import { Artifact, reduceArtifacts } from "./artifact";
 
-type ArtifactOptType = typeof artifactOptTypes[number];
 const elementTypes = ["geo"] as const;
 type ElementType = typeof elementTypes[number];
 
@@ -19,19 +7,9 @@ type ElementRes = {
   [K in ElementType]: number;
 };
 
-interface ArtifactOpt {
-  amount: number;
-  type: ArtifactOptType;
-}
-
 interface EnemyStat {
   lv: number;
   elementRes: ElementRes;
-}
-
-interface Artifact {
-  main: ArtifactOpt;
-  sub: ArtifactOpt[];
 }
 
 interface CharacterStat {
@@ -116,32 +94,6 @@ const artifacts: Artifact[] = [
     ],
   },
 ];
-
-type ReducedArtifact = { [K in ArtifactOptType]: number };
-
-const reduceArtifacts = (artifacts: Artifact[]): ReducedArtifact => {
-  const result: ReducedArtifact = {
-    hp: 0,
-    hpPercentage: 0,
-    atk: 0,
-    atkPercentage: 0,
-    def: 0,
-    defPercentage: 0,
-    geoDmgBuff: 0,
-    critRate: 0,
-    critDmg: 0,
-    energyRecharge: 0,
-  };
-
-  for (const artifact of artifacts) {
-    result[artifact.main.type] += artifact.main.amount;
-    for (const subOpt of artifact.sub) {
-      result[subOpt.type] += subOpt.amount;
-    }
-  }
-
-  return result;
-};
 
 interface Attack {
   rate: number;
