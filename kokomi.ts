@@ -25,12 +25,12 @@ export const calc = (ultEnabled = false) => {
   const ability = 1.094;
   const atk = 1271;
   const hp = 30711;
-  const giveHeelBuff = 0.709;
+  const giveHealBuff = 0.709;
   const dmgBuff = 1.832;
   const weaponDmgUp = hp * 0.01;
   let baseDmg = atk * ability + weaponDmgUp;
   if (ultEnabled) {
-    const passiveUpRate = giveHeelBuff * 0.15;
+    const passiveUpRate = giveHealBuff * 0.15;
     baseDmg += hp * (0.077 + passiveUpRate);
   }
 
