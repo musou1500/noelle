@@ -1,7 +1,14 @@
 import { Artifact, reduceArtifacts } from "./artifact";
 import { calcLvDecay, subElementRes } from "./dmg";
 
-const elementTypes = ["geo"] as const;
+const elementTypes = [
+  "geo",
+  "cryo",
+  "pyro",
+  "anemo",
+  "hydro",
+  "electro",
+] as const;
 type ElementType = typeof elementTypes[number];
 
 type ElementRes = {
