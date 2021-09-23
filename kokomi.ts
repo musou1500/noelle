@@ -7,6 +7,7 @@
 // 与える治療効果:70.9
 // 通常攻撃1段目:1399
 // 通常攻撃1段目(元素爆発中):6053
+// 通常攻撃1段目(元素爆発中，沈淪4発動):7044
 // 敵: lv80ヒルチャール
 
 const lvDecayRate = (lv: number, enemyLv: number) =>
@@ -16,7 +17,7 @@ const resDecayRate = (elementRes: number, sub: number) => {
   if (elementRes > sub) {
     return 1 - (elementRes - sub);
   } else {
-    return 1 - (sub - elementRes) / 2;
+    return 1 - (elementRes - sub) / 2;
   }
 };
 
