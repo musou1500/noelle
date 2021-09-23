@@ -1,5 +1,5 @@
 import { Artifact, reduceArtifacts } from "./artifact";
-import { subElementRes } from "./dmg";
+import { calcLvDecay, subElementRes } from "./dmg";
 
 const elementTypes = ["geo"] as const;
 type ElementType = typeof elementTypes[number];
@@ -157,9 +157,7 @@ const calc = (
       .filter((dmgBuff) => attack.dmgBuffTags.has(dmgBuff.tag))
       .reduce((prev, cur) => prev + cur.amount, 0);
 
-  const lvDecay =
-    (character.baseStat.lv + 100) /
-    (enemyStat.lv + 100 + (character.baseStat.lv + 100));
+  const lvDecay = calcLvDecay(character.baseStat.lv, enemyStat.lv);
 
   const debuffedElementRes = subAllElementRes(
     enemyStat.elementRes,
