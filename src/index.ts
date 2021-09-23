@@ -101,10 +101,6 @@ interface Attack {
   dmgBuffTags: Set<string>;
 }
 
-interface DmgBuffs {
-  normalAtk: number;
-}
-
 const subAllElementRes = (a: ElementRes, b: ElementRes) => {
   const result = { ...a };
   elementTypes.forEach((k) => {
